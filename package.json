@@ -1,0 +1,26 @@
+{
+  "name": "haelo-3d-viewer-demo",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Standalone industrial 3D model viewer demo for Haelo Labs.",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "lucide-react": "0.487.0",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "three": "^0.170.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "4.1.12",
+    "@types/three": "^0.170.0",
+    "@vitejs/plugin-react": "4.7.0",
+    "tailwindcss": "4.1.12",
+    "vite": "6.3.5"
+  }
+}

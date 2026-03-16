@@ -1,0 +1,72 @@
+@import './fonts.css';
+@import './tailwind.css';
+
+html {
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+body {
+  background: #09090b;
+  color: #f4f4f5;
+}
+
+/* Native range slider styling for dark industrial theme */
+.range-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 6px;
+  border-radius: 3px;
+  background: #27272a;
+  outline: none;
+  cursor: pointer;
+}
+
+.range-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #3b82f6;
+  border: 2px solid #3b82f6;
+  cursor: pointer;
+  transition: box-shadow 0.15s;
+}
+
+.range-slider::-webkit-slider-thumb:hover {
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2);
+}
+
+.range-slider::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #3b82f6;
+  border: 2px solid #3b82f6;
+  cursor: pointer;
+  transition: box-shadow 0.15s;
+}
+
+.range-slider::-moz-range-thumb:hover {
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2);
+}
+
+.range-slider::-moz-range-track {
+  height: 6px;
+  border-radius: 3px;
+  background: #27272a;
+}
