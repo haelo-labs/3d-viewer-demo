@@ -26,6 +26,10 @@ interface GearSceneProps {
   onModelLoaded?: (info: ModelInfo | null) => void;
 }
 
+type TransformMode = 'translate' | 'scale';
+
+const DEFAULT_TRANSFORM_MODE: TransformMode = 'scale';
+
 // ─── Simplified Industrial Gear Geometry ──────────────────────────────────────
 
 /**
@@ -599,7 +603,7 @@ export function GearScene({ gearState, onStatsUpdate, onUpdate, onModelLoaded }:
   const animIdRef = useRef<number>(0);
   const gearStateRef = useRef(gearState);
   const onUpdateRef = useRef(onUpdate);
-  const transformModeRef = useRef<'translate' | 'scale'>('translate');
+  const transformModeRef = useRef<TransformMode>(DEFAULT_TRANSFORM_MODE);
   const dragStateRef = useRef<DragTransformState>({
     active: false,
     startPointer: { x: 0, y: 0 },
@@ -609,7 +613,7 @@ export function GearScene({ gearState, onStatsUpdate, onUpdate, onModelLoaded }:
   });
 
   const [isSelected, setIsSelected] = useState(false);
-  const [transformMode, setTransformMode] = useState<'translate' | 'scale'>('translate');
+  const [transformMode, setTransformMode] = useState<TransformMode>(DEFAULT_TRANSFORM_MODE);
   const toolbarRef = useRef<HTMLDivElement>(null);
   const isSelectedRef = useRef(false);
   const isImportedModelRef = useRef(false);
@@ -939,6 +943,8 @@ export function GearScene({ gearState, onStatsUpdate, onUpdate, onModelLoaded }:
         const intersects = raycaster.intersectObjects([mainGearRef.current], true)
           .filter(hit => !hit.object.parent?.userData.isOutline);
         if (intersects.length > 0) {
+          transformModeRef.current = DEFAULT_TRANSFORM_MODE;
+          setTransformMode(DEFAULT_TRANSFORM_MODE);
           setIsSelected(true);
           isSelectedRef.current = true;
 
