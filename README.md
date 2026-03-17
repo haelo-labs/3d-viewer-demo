@@ -17,16 +17,31 @@ This is a demo app, not a production starter.
 1. Copy `.env.example` to `.env`
 2. Add your own Anthropic API key to `ANTHROPIC_API_KEY`
 3. Install dependencies with `npm install`
-4. Start the app with `npm run dev`
-5. Open the local Vite URL shown in the terminal
+4. In one terminal, start the local Exocor relay with `npx exocor dev`
+5. In a second terminal, start the app with `npm run dev`
+6. Open the local Vite URL shown in the terminal
 
-Once the Exocor package is available as a normal dependency, the intended setup is just: create `.env`, install dependencies, and run the app.
+The relay is required for localhost testing. It reads `ANTHROPIC_API_KEY` from the demo root and keeps that key out of the browser.
 
-If you are trying the demo before the package is publicly published, make sure `exocor` is available locally in your environment first.
+## Local Testing Flow
+
+From the demo root:
+
+```bash
+# terminal 1
+npx exocor dev
+```
+
+```bash
+# terminal 2
+npm run dev
+```
+
+Run `npx exocor dev` from this repo root so Exocor can read `.env` or `.env.local`.
 
 ## Environment Variables
 
-- `ANTHROPIC_API_KEY`: your Anthropic API key for the Exocor-powered experience
+- `ANTHROPIC_API_KEY`: your Anthropic API key for the Exocor-powered experience; the local relay reads this from `.env` or `.env.local`
 - `VITE_EXOCOR_DEBUG`: optional debug flag for local SDK debugging
 
 ## Scripts
@@ -34,6 +49,7 @@ If you are trying the demo before the package is publicly published, make sure `
 - `npm run dev`: start the local development server
 - `npm run build`: create a production build
 - `npm run preview`: preview the production build locally
+- `npx exocor dev`: start the local Exocor relay used for localhost testing
 
 ## License
 
