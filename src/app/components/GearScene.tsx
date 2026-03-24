@@ -1,4 +1,4 @@
-import { useRef, useEffect, useCallback, useState } from 'react';
+import { forwardRef, useRef, useEffect, useCallback, useState, useImperativeHandle } from 'react';
 import * as THREE from 'three';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
@@ -24,9 +24,17 @@ interface GearSceneProps {
   onStatsUpdate: (stats: { vertices: number; triangles: number }) => void;
   onUpdate: (partial: Partial<GearState>) => void;
   onModelLoaded?: (info: ModelInfo | null) => void;
+  onSelectionChange?: (selected: boolean) => void;
+  onTransformModeChange?: (mode: TransformMode) => void;
 }
 
-type TransformMode = 'translate' | 'scale';
+export type TransformMode = 'translate' | 'scale';
+
+export interface GearSceneHandle {
+  selectLoadedModel: () => boolean;
+  deselectModel: () => void;
+  setTransformMode: (mode: TransformMode) => boolean;
+}
 
 const DEFAULT_TRANSFORM_MODE: TransformMode = 'scale';
 
@@ -587,7 +595,10 @@ interface DragTransformState {
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
-export function GearScene({ gearState, onStatsUpdate, onUpdate, onModelLoaded }: GearSceneProps) {
+export const GearScene = forwardRef<GearSceneHandle, GearSceneProps>(function GearScene(
+  { gearState, onStatsUpdate, onUpdate, onModelLoaded, onSelectionChange, onTransformModeChange }: GearSceneProps,
+  ref
+) {
   const containerRef = useRef<HTMLDivElement>(null);
   const sceneRef = useRef<THREE.Scene | null>(null);
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
@@ -624,6 +635,8 @@ export function GearScene({ gearState, onStatsUpdate, onUpdate, onModelLoaded }:
   const [hasModel, setHasModel] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const onModelLoadedRef = useRef(onModelLoaded);
+  const onSelectionChangeRef = useRef(onSelectionChange);
+  const onTransformModeChangeRef = useRef(onTransformModeChange);
 
   useEffect(() => {
     gearStateRef.current = gearState;
@@ -636,6 +649,14 @@ export function GearScene({ gearState, onStatsUpdate, onUpdate, onModelLoaded }:
   useEffect(() => {
     onModelLoadedRef.current = onModelLoaded;
   }, [onModelLoaded]);
+
+  useEffect(() => {
+    onSelectionChangeRef.current = onSelectionChange;
+  }, [onSelectionChange]);
+
+  useEffect(() => {
+    onTransformModeChangeRef.current = onTransformModeChange;
+  }, [onTransformModeChange]);
 
   useEffect(() => {
     transformModeRef.current = transformMode;
@@ -652,6 +673,84 @@ export function GearScene({ gearState, onStatsUpdate, onUpdate, onModelLoaded }:
       }
     }
   }, [transformMode]);
+
+  const applySelectionVisuals = useCallback((selected: boolean) => {
+    if (!selected) {
+      if (gizmoRef.current) gizmoRef.current.visible = false;
+      if (outlineRef.current && outlineRef.current.parent) {
+        outlineRef.current.parent.remove(outlineRef.current);
+        outlineRef.current = null;
+      }
+      if (cageRef.current) cageRef.current.visible = false;
+      return;
+    }
+
+    if (!mainGearRef.current) {
+      return;
+    }
+
+    if (gizmoRef.current) {
+      gizmoRef.current.visible = transformModeRef.current === 'translate';
+      gizmoRef.current.position.copy(mainGearRef.current.position);
+    }
+
+    if (outlineRef.current && outlineRef.current.parent) {
+      outlineRef.current.parent.remove(outlineRef.current);
+    }
+    const outline = createOutlineGroup(mainGearRef.current);
+    mainGearRef.current.add(outline);
+    outlineRef.current = outline;
+
+    if (cageRef.current) {
+      const bbox = new THREE.Box3().setFromObject(mainGearRef.current);
+      updateScaleCage(cageRef.current, bbox);
+      cageRef.current.visible = transformModeRef.current === 'scale';
+    }
+  }, []);
+
+  const commitSelectionChange = useCallback(
+    (selected: boolean) => {
+      setIsSelected(selected);
+      isSelectedRef.current = selected;
+      onSelectionChangeRef.current?.(selected);
+      applySelectionVisuals(selected);
+    },
+    [applySelectionVisuals]
+  );
+
+  const commitTransformModeChange = useCallback((mode: TransformMode) => {
+    transformModeRef.current = mode;
+    setTransformMode(mode);
+    onTransformModeChangeRef.current?.(mode);
+  }, []);
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      selectLoadedModel: () => {
+        if (!mainGearRef.current) {
+          return false;
+        }
+        commitTransformModeChange(DEFAULT_TRANSFORM_MODE);
+        commitSelectionChange(true);
+        return true;
+      },
+      deselectModel: () => {
+        commitSelectionChange(false);
+      },
+      setTransformMode: (mode: TransformMode) => {
+        if (!mainGearRef.current) {
+          return false;
+        }
+        commitTransformModeChange(mode);
+        if (!isSelectedRef.current) {
+          commitSelectionChange(true);
+        }
+        return true;
+      }
+    }),
+    [commitSelectionChange, commitTransformModeChange]
+  );
 
   // ─── Initialize Scene ───────────────────────────────────────────────────────
   useEffect(() => {
@@ -943,37 +1042,10 @@ export function GearScene({ gearState, onStatsUpdate, onUpdate, onModelLoaded }:
         const intersects = raycaster.intersectObjects([mainGearRef.current], true)
           .filter(hit => !hit.object.parent?.userData.isOutline);
         if (intersects.length > 0) {
-          transformModeRef.current = DEFAULT_TRANSFORM_MODE;
-          setTransformMode(DEFAULT_TRANSFORM_MODE);
-          setIsSelected(true);
-          isSelectedRef.current = true;
-
-          if (gizmoRef.current) {
-            gizmoRef.current.visible = transformModeRef.current === 'translate';
-            gizmoRef.current.position.copy(mainGearRef.current.position);
-          }
-
-          if (outlineRef.current && outlineRef.current.parent) {
-            outlineRef.current.parent.remove(outlineRef.current);
-          }
-          const outline = createOutlineGroup(mainGearRef.current);
-          mainGearRef.current.add(outline);
-          outlineRef.current = outline;
-
-          if (cageRef.current && mainGearRef.current) {
-            const bbox = new THREE.Box3().setFromObject(mainGearRef.current);
-            updateScaleCage(cageRef.current, bbox);
-            cageRef.current.visible = transformModeRef.current === 'scale';
-          }
+          commitTransformModeChange(DEFAULT_TRANSFORM_MODE);
+          commitSelectionChange(true);
         } else {
-          setIsSelected(false);
-          isSelectedRef.current = false;
-          if (gizmoRef.current) gizmoRef.current.visible = false;
-          if (outlineRef.current && outlineRef.current.parent) {
-            outlineRef.current.parent.remove(outlineRef.current);
-            outlineRef.current = null;
-          }
-          if (cageRef.current) cageRef.current.visible = false;
+          commitSelectionChange(false);
         }
       }
     };
@@ -1185,15 +1257,8 @@ export function GearScene({ gearState, onStatsUpdate, onUpdate, onModelLoaded }:
   }, [gearState.teeth, gearState.color, gearState.metalness, gearState.roughness, gearState.width, gearState.height, rebuildGear]);
 
   const handleDeselect = useCallback(() => {
-    setIsSelected(false);
-    isSelectedRef.current = false;
-    if (gizmoRef.current) gizmoRef.current.visible = false;
-    if (outlineRef.current && outlineRef.current.parent) {
-      outlineRef.current.parent.remove(outlineRef.current);
-      outlineRef.current = null;
-    }
-    if (cageRef.current) cageRef.current.visible = false;
-  }, []);
+    commitSelectionChange(false);
+  }, [commitSelectionChange]);
 
   const handleFileChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -1388,7 +1453,7 @@ export function GearScene({ gearState, onStatsUpdate, onUpdate, onModelLoaded }:
         >
           <button
             type="button"
-            onClick={() => setTransformMode('translate')}
+            onClick={() => commitTransformModeChange('translate')}
             aria-pressed={transformMode === 'translate'}
             aria-label="Translate mode — drag to move"
             title="Translate (drag to move)"
@@ -1398,7 +1463,7 @@ export function GearScene({ gearState, onStatsUpdate, onUpdate, onModelLoaded }:
           </button>
           <button
             type="button"
-            onClick={() => setTransformMode('scale')}
+            onClick={() => commitTransformModeChange('scale')}
             aria-pressed={transformMode === 'scale'}
             aria-label="Scale mode — drag to resize"
             title="Scale (drag to resize)"
@@ -1499,4 +1564,4 @@ export function GearScene({ gearState, onStatsUpdate, onUpdate, onModelLoaded }:
       )}
     </div>
   );
-}
+});

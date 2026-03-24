@@ -1,47 +1,62 @@
 # Haelō 3D Viewer Demo
 
-This repo is a small Vite + React demo app for quickly trying Exocor in a 3D workflow.
+A 3D model viewer demo for trying [Exocor](https://github.com/haelo-labs/exocor) in a spatial product workflow.
 
-It gives you a realistic surface for testing the SDK inside a product-like experience: loading a 3D object, inspecting it in a viewer, adjusting the scene, and seeing how Exocor fits into that UI.
+This app gives you a realistic surface for testing Exocor inside a product-like 3D experience: load a model, inspect it in the viewport, adjust its materials, and switch transform modes without leaving the app.
 
-## What This Demo Is For
+## What You Can Try
 
-- Trying Exocor quickly without setting up a larger app
-- Evaluating how the SDK feels in a spatial or 3D product experience
-- Sharing a simple, runnable example with other developers
+- Load a local 3D model into the viewer
+- Select and deselect the loaded model
+- Switch between translate and scale modes
+- Apply steel, copper, and carbon material presets
+- Adjust metalness and roughness on the loaded model
+- Compare Exocor's learned UI model with the app-native viewer tools exposed through `SpatialProvider`
 
 This is a demo app, not a production starter.
 
 ## Quick Start
 
 1. Copy `.env.example` to `.env`
-2. Add your own Anthropic API key to `ANTHROPIC_API_KEY`
+2. Add your Anthropic API key to `ANTHROPIC_API_KEY`
 3. Install dependencies with `npm install`
-4. In one terminal, start the local Exocor relay with `npx exocor dev`
-5. In a second terminal, start the app with `npm run dev`
+4. In one terminal, run `npx exocor dev`
+5. In a second terminal, run `npm run dev`
 6. Open the local Vite URL shown in the terminal
+7. Load a supported 3D file into the viewer to try the material and transform workflows
 
-The relay is required for localhost testing. It reads `ANTHROPIC_API_KEY` from the demo root and keeps that key out of the browser.
+Run `npx exocor dev` from this repo root so the local relay can read `.env` or `.env.local`.
 
-## Local Testing Flow
+## Exocor Version
 
-From the demo root:
+This repo is pinned to `exocor@0.2.0`.
 
-```bash
-# terminal 1
-npx exocor dev
-```
+The demo uses the published package by default so the GitHub repo is clone-and-run friendly.
 
-```bash
-# terminal 2
-npm run dev
-```
+## App-Native Tools
 
-Run `npx exocor dev` from this repo root so Exocor can read `.env` or `.env.local`.
+This demo registers app-native tools for the viewer workflows it already supports today.
+
+- Select or deselect the loaded model
+- Switch between translate and scale modes
+- Apply a material preset
+- Set metalness
+- Set roughness
+
+Model import still happens through the existing local file workflow. Once a model is loaded, Exocor can use the registered viewer actions instead of relying only on learned structure and DOM fallback.
+
+## Supported File Types
+
+- `.glb`
+- `.gltf`
+- `.stl`
+- `.obj`
+- `.fbx`
+- `.ply`
 
 ## Environment Variables
 
-- `ANTHROPIC_API_KEY`: your Anthropic API key for the Exocor-powered experience; the local relay reads this from `.env` or `.env.local`
+- `ANTHROPIC_API_KEY`: used by the local Exocor relay from `.env` or `.env.local`
 - `VITE_EXOCOR_DEBUG`: optional debug flag for local SDK debugging
 
 ## Scripts
@@ -49,7 +64,7 @@ Run `npx exocor dev` from this repo root so Exocor can read `.env` or `.env.loca
 - `npm run dev`: start the local development server
 - `npm run build`: create a production build
 - `npm run preview`: preview the production build locally
-- `npx exocor dev`: start the local Exocor relay used for localhost testing
+- `npx exocor dev`: start the local Exocor relay for localhost testing
 
 ## License
 
