@@ -12,6 +12,8 @@ type ViewerToolOptions = {
   setMetalness: (value: number) => Promise<void>;
   setRoughness: (value: number) => Promise<void>;
   setViewerTransformMode: (mode: TransformMode) => Promise<void>;
+  zoomIn: () => Promise<void>;
+  zoomOut: () => Promise<void>;
 };
 
 function normalizePreset(value: unknown): 'steel' | 'copper' | 'carbon' {
@@ -60,10 +62,28 @@ export function useViewerExocorTools({
   selectLoadedModel,
   setMetalness,
   setRoughness,
-  setViewerTransformMode
+  setViewerTransformMode,
+  zoomIn,
+  zoomOut
 }: ViewerToolOptions): ExocorToolDefinition[] {
   return useMemo<ExocorToolDefinition[]>(
     () => [
+      {
+        id: 'zoomIn',
+        description: 'Zoom in on the 3D viewport camera',
+        safety: 'read',
+        handler: async () => {
+          await zoomIn();
+        }
+      },
+      {
+        id: 'zoomOut',
+        description: 'Zoom out on the 3D viewport camera',
+        safety: 'read',
+        handler: async () => {
+          await zoomOut();
+        }
+      },
       {
         id: 'selectLoadedModel',
         description: hasModel ? 'Select the loaded model in the viewport' : 'Select the loaded model after a file is imported',
@@ -156,7 +176,9 @@ export function useViewerExocorTools({
       setMetalness,
       setRoughness,
       setViewerTransformMode,
-      transformMode
+      transformMode,
+      zoomIn,
+      zoomOut
     ]
   );
 }

@@ -34,6 +34,8 @@ export interface GearSceneHandle {
   selectLoadedModel: () => boolean;
   deselectModel: () => void;
   setTransformMode: (mode: TransformMode) => boolean;
+  zoomIn: () => boolean;
+  zoomOut: () => boolean;
 }
 
 const DEFAULT_TRANSFORM_MODE: TransformMode = 'scale';
@@ -486,6 +488,8 @@ class SimpleOrbitControls {
   public autoRotateSpeed = 0.15; // radians per second (slow cinematic)
   private lastInteractionTime = 0;
   private autoRotateDelay = 2000; // ms after last interaction before auto-rotate resumes
+  private minRadius = 2;
+  private maxRadius = 15;
 
   constructor(camera: THREE.PerspectiveCamera, domElement: HTMLElement) {
     this.camera = camera;
@@ -549,7 +553,11 @@ class SimpleOrbitControls {
     if (!this.enabled) return;
     e.preventDefault();
     const factor = e.deltaY > 0 ? 1.1 : 0.9;
-    this.spherical.radius = Math.max(2, Math.min(15, this.spherical.radius * factor));
+    this.zoomByFactor(factor);
+  }
+
+  zoomByFactor(factor: number) {
+    this.spherical.radius = Math.max(this.minRadius, Math.min(this.maxRadius, this.spherical.radius * factor));
     this.lastInteractionTime = Date.now();
   }
 
@@ -746,6 +754,20 @@ export const GearScene = forwardRef<GearSceneHandle, GearSceneProps>(function Ge
         if (!isSelectedRef.current) {
           commitSelectionChange(true);
         }
+        return true;
+      },
+      zoomIn: () => {
+        if (!controlsRef.current) {
+          return false;
+        }
+        controlsRef.current.zoomByFactor(0.85);
+        return true;
+      },
+      zoomOut: () => {
+        if (!controlsRef.current) {
+          return false;
+        }
+        controlsRef.current.zoomByFactor(1.15);
         return true;
       }
     }),

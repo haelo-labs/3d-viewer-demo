@@ -8,6 +8,7 @@ This app gives you a realistic surface for testing Exocor inside a product-like 
 
 - Load a local 3D model into the viewer
 - Select and deselect the loaded model
+- Zoom the viewport camera in and out
 - Switch between translate and scale modes
 - Apply steel, copper, and carbon material presets
 - Adjust metalness and roughness on the loaded model
@@ -38,6 +39,7 @@ The demo uses the published package by default so the GitHub repo is clone-and-r
 This demo registers app-native tools for the viewer workflows it already supports today.
 
 - Select or deselect the loaded model
+- Zoom the viewport camera in or out
 - Switch between translate and scale modes
 - Apply a material preset
 - Set metalness

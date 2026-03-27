@@ -84,6 +84,18 @@ export default function App() {
     [hasModel, updateState]
   );
 
+  const zoomIn = useCallback(async () => {
+    if (!sceneRef.current?.zoomIn()) {
+      throw new Error('Viewport zoom is unavailable.');
+    }
+  }, []);
+
+  const zoomOut = useCallback(async () => {
+    if (!sceneRef.current?.zoomOut()) {
+      throw new Error('Viewport zoom is unavailable.');
+    }
+  }, []);
+
   const tools = useViewerExocorTools({
     hasModel,
     isSelected,
@@ -93,7 +105,9 @@ export default function App() {
     selectLoadedModel,
     setMetalness,
     setRoughness,
-    setViewerTransformMode
+    setViewerTransformMode,
+    zoomIn,
+    zoomOut
   });
 
   return (
