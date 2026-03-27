@@ -29,7 +29,7 @@ Run `npx exocor dev` from this repo root so the local relay can read `.env` or `
 
 ## Exocor Version
 
-This repo is pinned to `exocor@0.2.0`.
+This repo is pinned to `exocor@0.2.1`.
 
 The demo uses the published package by default so the GitHub repo is clone-and-run friendly.
 
